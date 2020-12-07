@@ -18,8 +18,8 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/
-      },
-    ],
+      }
+    ]
   },
 
   resolve: {
@@ -41,8 +41,8 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: 'src/index.html' },
-        { from: 'src/index.css' } // ,
-        // { from: 'assets/**/*' }
+        { from: 'src/index.css' },
+        { from: 'assets/**/*' }
       ]
     }),
 
