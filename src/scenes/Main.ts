@@ -1,8 +1,11 @@
-import { Scene, Physics, Types } from 'phaser';
+import { Scene, Physics, GameObjects, Types } from 'phaser';
 
 export default class Main extends Scene {
   private keys!: Types.Input.Keyboard.CursorKeys;
   private player!: Physics.Arcade.Sprite;
+
+  private scoreText!: GameObjects.Text;
+  private score = 0;
 
 	public constructor () {
     super({ key: 'Main' });
@@ -22,10 +25,19 @@ export default class Main extends Scene {
 
 	private create (): void {
     const platforms = this.createPlatforms();
+    this.keys = this.createCursorKeys();
+
+    const stars = this.createStars();
     this.player = this.createPlayer();
 
-    this.keys = this.createCursorKeys();
+    this.physics.add.collider(stars, platforms);
     this.physics.add.collider(this.player, platforms);
+    this.physics.add.overlap(this.player, stars, this.pickStar, undefined, this);
+
+    this.scoreText = this.add.text(16, 16, 'Score: 0', {
+      fontSize: '32px',
+      fill: '#ffffff'
+    });
   }
 
   private createCursorKeys (): Types.Input.Keyboard.CursorKeys {
@@ -74,6 +86,26 @@ export default class Main extends Scene {
     });
 
     return player;
+  }
+
+  private createStars (): Physics.Arcade.Group {
+    const stars = this.physics.add.group({
+      setXY: { x: 12, y: 0, stepX: 70.5 },
+      key: 'star',
+      repeat: 11
+    });
+
+    stars.children.iterate((child: any) =>
+      child.setBounceY(Phaser.Math.FloatBetween(0.25, 0.5)));
+
+    return stars;
+  }
+
+  private pickStar (player: GameObjects.GameObject, star: GameObjects.GameObject): void {
+    (star as Physics.Arcade.Sprite).disableBody(true, true);
+
+    this.score += 10;
+    this.scoreText.setText('Score: ' + this.score);
   }
 
 	public update (time: number, delta: number): void {

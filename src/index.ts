@@ -14,7 +14,7 @@ export const game = new Game({
 
     arcade: {
       gravity: { y: 300 },
-      debug: true
+      debug: false
     }
   },
 
