@@ -1,6 +1,4 @@
-html,
-body,
-canvas {
+html, body {
   -webkit-text-rendering: optimizeLegibility;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
@@ -27,4 +25,22 @@ canvas {
 
   left: 0;
   top: 0;
+}
+
+body .game {
+  position: absolute;
+  margin: auto;
+
+  height: 600px;
+  width: 800px;
+
+  bottom: 0;
+  right: 0;
+  left: 0;
+  top: 0;
+}
+
+#container {
+  height: 100%;
+  width: 100%;  
 }
