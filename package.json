@@ -1,6 +1,6 @@
 {
   "name": "phaser",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Phaser | First game tutorial",
   "main": "src/index.ts",
   "author": "Ustym Ukhman",

@@ -4,7 +4,13 @@ export default class Main extends Scene {
   private keys!: Types.Input.Keyboard.CursorKeys;
   private player!: Physics.Arcade.Sprite;
 
+  private stars!: Physics.Arcade.Group;
+  private bombs!: Physics.Arcade.Group;
+
+  private gameOverText!: GameObjects.Text;
   private scoreText!: GameObjects.Text;
+
+  private gameOver = false;
   private score = 0;
 
 	public constructor () {
@@ -27,17 +33,30 @@ export default class Main extends Scene {
     const platforms = this.createPlatforms();
     this.keys = this.createCursorKeys();
 
-    const stars = this.createStars();
+    this.stars = this.createStars();
+    this.bombs = this.createBombs();
     this.player = this.createPlayer();
 
-    this.physics.add.collider(stars, platforms);
+    this.physics.add.collider(this.stars, platforms);
+    this.physics.add.collider(this.bombs, platforms);
     this.physics.add.collider(this.player, platforms);
-    this.physics.add.overlap(this.player, stars, this.pickStar, undefined, this);
+
+    this.physics.add.overlap(this.player, this.stars, this.pickStar, undefined, this);
+    this.physics.add.collider(this.player, this.bombs, this.hitBomb, undefined, this);
+
+    this.gameOverText = this.add.text(225, 275, 'Game Over', {
+      strokeThickness: 1.0,
+      stroke: '#000000',
+      fontSize: '64px',
+      fill: '#ff0000'
+    });
 
     this.scoreText = this.add.text(16, 16, 'Score: 0', {
       fontSize: '32px',
       fill: '#ffffff'
     });
+
+    this.gameOverText.visible = false;
   }
 
   private createCursorKeys (): Types.Input.Keyboard.CursorKeys {
@@ -95,10 +114,16 @@ export default class Main extends Scene {
       repeat: 11
     });
 
-    stars.children.iterate((child: any) =>
-      child.setBounceY(Phaser.Math.FloatBetween(0.25, 0.5)));
+    stars.children.iterate(child =>
+      (child as Physics.Arcade.Sprite).setBounceY(
+        Phaser.Math.FloatBetween(0.25, 0.5)
+      ));
 
     return stars;
+  }
+
+  private createBombs (): Physics.Arcade.Group {
+    return this.physics.add.group();
   }
 
   private pickStar (player: GameObjects.GameObject, star: GameObjects.GameObject): void {
@@ -106,10 +131,37 @@ export default class Main extends Scene {
 
     this.score += 10;
     this.scoreText.setText('Score: ' + this.score);
+    !this.stars.countActive(true) && this.releaseBomb();
+  }
+
+  private releaseBomb (): void {
+    this.stars.children.iterate(child => {
+      const star = child as Physics.Arcade.Sprite;
+      star.enableBody(true, star.x, 0, true, true);
+    });
+
+    const x = this.player.x > 400
+      ? Phaser.Math.Between(0, 400)
+      : Phaser.Math.Between(400, 800);
+
+    const bomb = this.bombs.create(x, 16, 'bomb');
+
+    bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+    bomb.setCollideWorldBounds(true);
+    bomb.setBounce(0.5);
+  }
+
+  private hitBomb (player: GameObjects.GameObject, bomb: GameObjects.GameObject): void {
+    this.gameOverText.visible = true;
+    this.player.anims.play('turn');
+    this.player.setTint(0xff0000);
+
+    this.gameOver = true;
+    this.physics.pause();
   }
 
 	public update (time: number, delta: number): void {
-    if (!this.keys.left || !this.keys.right || !this.keys.up) return;
+    if (this.gameOver || !this.keys.left || !this.keys.right || !this.keys.up) return;
 
     const playerInAir = !this.player.body.touching.down;
 
